@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gateway Identity Access - LUXE</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body style="display:flex; align-items:center; justify-content:center; min-height:100vh;">
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <div class="glass-card" style="width:100%; max-width:400px; padding:30px; margin:20px;">
+        <h2 style="text-align:center; color:var(--accent-pink); margin-bottom:10px;">LUXE AUTH</h2>
+        <p style="text-align:center; color:var(--text-muted); font-size:14px; margin-bottom:30px;">Access your premium store gateway</p>
+        
+        <form id="authForm" onsubmit="handleAuthenticationAction(event)">
+            <div style="margin-bottom:20px;">
+                <label style="display:block; margin-bottom:8px; font-size:12px; color:var(--text-muted);">Mobile Number</label>
+                <input type="tel" id="authPhone" required pattern="[0-9]{10}" placeholder="Enter 10 digit number" style="width:100%; padding:12px; background:var(--bg-main); border:1px solid var(--glass-border); border-radius:8px; color:white; outline:none;">
+            </div>
+            <div style="margin-bottom:30px;">
+                <label style="display:block; margin-bottom:8px; font-size:12px; color:var(--text-muted);">Secure Password</label>
+                <input type="password" id="authPassword" required minlength="6" placeholder="******" style="width:100%; padding:12px; background:var(--bg-main); border:1px solid var(--glass-border); border-radius:8px; color:white; outline:none;">
+            </div>
+
+            <button type="submit" class="btn-primary" style="width:100%; margin-bottom:15px;" id="submitAuthBtn">Sign In</button>
+            <button type="button" class="btn-secondary" style="width:100%;" onclick="toggleAuthMode()" id="toggleModeBtn">New User? Create Account</button>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js"></script>
+    <script src="app.js"></script>
+    <script src="auth.js"></script>
+</body>
+</html>
