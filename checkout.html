@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Settlement Protocol - LUXE</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="responsive.css">
+</head>
+<body>
+    <div class="toast-container" id="toastContainer"></div>
+
+    <main style="padding:20px; max-width:800px; margin:0 auto;">
+        <h2 style="color:var(--accent-pink); margin-bottom:20px;">Secure Checkout</h2>
+        <div class="grid-container" style="grid-template-columns:1fr; gap:20px; padding:0;">
+            
+            <div class="glass-card" style="padding:20px;">
+                <h3>Delivery Logistics Profile</h3>
+                <form id="checkoutAddressForm" onsubmit="processOrderPlacement(event)" style="margin-top:15px; display:grid; gap:15px;">
+                    <input type="text" id="chkName" placeholder="Full Name" required style="width:100%; padding:12px; background:var(--bg-main); border:1px solid var(--glass-border); border-radius:8px; color:white;">
+                    <div style="display:flex; gap:10px;">
+                        <input type="tel" id="chkPhone" placeholder="Phone Number" required pattern="[0-9]{10}" style="flex:1; padding:12px; background:var(--bg-main); border:1px solid var(--glass-border); border-radius:8px; color:white;">
+                        <input type="tel" id="chkAltPhone" placeholder="Alternate Phone" pattern="[0-9]{10}" style="flex:1; padding:12px; background:var(--bg-main); border:1px solid var(--glass-border); border-radius:8px; color:white;">
+                    </div>
+                    <input type="text" id="chkHouse" placeholder="House / Flat / Building No." required style="padding:12px; background:var(--bg-main); border:1px solid var(--glass-border); border-radius:8px; color:white;">
+                    <input type="text" id="chkArea" placeholder="Area / Street / Colony" required style="padding:12px; background:var(--bg-main); border:1px solid var(--glass-border); border-radius:8px; color:white;">
+                    <input type="text" id="chkLandmark" placeholder="Landmark (Optional)" style="padding:12px; background:var(--bg-main); border:1px solid var(--glass-border); border-radius:8px; color:white;">
+                    <div style="display:flex; gap:10px;">
+                        <input type="text" id="chkCity" placeholder="City" required style="flex:1; padding:12px; background:var(--bg-main); border:1px solid var(--glass-border); border-radius:8px; color:white;">
+                        <input type="text" id="chkState" placeholder="State" required style="flex:1; padding:12px; background:var(--bg-main); border:1px solid var(--glass-border); border-radius:8px; color:white;">
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        <input type="text" id="chkPincode" placeholder="Pincode" required pattern="[0-9]{6}" style="flex:1; padding:12px; background:var(--bg-main); border:1px solid var(--glass-border); border-radius:8px; color:white;">
+                        <input type="text" id="chkCountry" value="India" readonly style="flex:1; padding:12px; background:var(--bg-secondary); border:1px solid var(--glass-border); border-radius:8px; color:var(--text-muted);">
+                    </div>
+                    
+                    <div style="margin-top:10px; padding:15px; background:rgba(216,27,96,0.1); border-radius:8px; border:1px solid var(--primary-pink);">
+                        <p style="font-weight:600; color:var(--accent-pink);"><i class="fa fa-money-bill-wave"></i> Payment Mode Available</p>
+                        <p style="font-size:12px; color:var(--text-muted); margin-top:5px;">Cash on Delivery (COD) is the exclusive validation standard enabled.</p>
+                    </div>
+
+                    <button type="submit" class="btn-primary" style="width:100%; margin-top:10px;">Place Order (Cash On Delivery)</button>
+                </form>
+            </div>
+
+            <div class="glass-card" style="padding:20px; height:fit-content;">
+                <h3>Order Ledger Summary</h3>
+                <div id="checkoutSummaryItems" style="margin:15px 0; max-height:200px; overflow-y:auto;"></div>
+                <hr style="border-color:var(--glass-border); margin:15px 0;">
+                <div style="display:flex; justify-content:between; flex-direction:column; gap:8px;" id="checkoutPricingSummary"></div>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js"></script>
+    <script src="app.js"></script>
+    <script src="cart.js"></script>
+    <script>
+        async function runCheckoutRender() {
+            const user = _supabase.auth.user();
+            if(!user) { window.location.href='login.html'; return; }
+            
+            let cart = JSON.parse(localStorage.getItem('luxe_cart')) || [];
+            if(cart.length === 0) { alert('Cart is empty.'); window.location.href='index.html'; return; }
+
+            let itemsHtml = '';
+            let totalAmt = 0;
+            let totalSavings = 0;
+
+            cart.forEach(item => {
+                itemsHtml += `
+                    <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:14px;">
+                        <span>${item.name} (${item.size}) x${item.quantity}</span>
+                        <span>₹${item.discounted_price * item.quantity}</span>
+                    </div>
+                `;
+                totalAmt += (item.discounted_price * item.quantity);
+                totalSavings += ((item.original_price - item.discounted_price) * item.quantity);
+            });
+
+            document.getElementById('checkoutSummaryItems').innerHTML = itemsHtml;
+            document.getElementById('checkoutPricingSummary').innerHTML = `
+                <div style="display:flex; justify-content:space-between;"><span>Subtotal</span><span>₹${totalAmt}</span></div>
+                <div style="display:flex; justify-content:space-between; color:var(--accent-pink);"><span>Total Discount Savings</span><span>-₹${totalSavings}</span></div>
+                <div style="display:flex; justify-content:space-between;"><span>Delivery Fee</span><span style="color:green;">FREE</span></div>
+                <hr style="border-color:var(--glass-border);">
+                <div style="display:flex; justify-content:space-between; font-weight:700; font-size:18px;"><span>Grand Total</span><span>₹${totalAmt}</span></div>
+            `;
+        }
+
+        async function processOrderPlacement(e) {
+            e.preventDefault();
+            const user = _supabase.auth.user();
+            let cart = JSON.parse(localStorage.getItem('luxe_cart')) || [];
+            let totalAmt = cart.reduce((sum, item) => sum + (item.discounted_price * item.quantity), 0);
+            const savedRefCode = localStorage.getItem('active_referral_token');
+
+            let referrerId = null;
+            if(savedRefCode) {
+                const { data: refProfile } = await _supabase.from('profiles').select('id').eq('referral_code', savedRefCode).single();
+                if(refProfile) referrerId = refProfile.id;
+            }
+
+            const payload = {
+                user_id: user.id,
+                customer_phone: document.getElementById('chkPhone').value,
+                customer_name: document.getElementById('chkName').value,
+                alternate_phone: document.getElementById('chkAltPhone').value,
+                address_house: document.getElementById('chkHouse').value,
+                address_area: document.getElementById('chkArea').value,
+                landmark: document.getElementById('chkLandmark').value,
+                city: document.getElementById('chkCity').value,
+                state: document.getElementById('chkState').value,
+                pincode: document.getElementById('chkPincode').value,
+                items: cart,
+                total_amount: totalAmt,
+                referral_code_used: savedRefCode,
+                referrer_id: referrerId,
+                order_status: 'Pending'
+            };
+
+            const { data, error } = await _supabase.from('orders').insert([payload]);
+            if(error) { showToast('Error finalizing transaction.'); console.error(error); }
+            else {
+                localStorage.removeItem('luxe_cart');
+                localStorage.removeItem('active_referral_token');
+                showToast('Order Processed Successfully via COD!');
+                setTimeout(() => window.location.href = 'profile.html?tab=orders', 2000);
+            }
+        }
+
+        window.onload = runCheckoutRender;
+    </script>
+</body>
+</html>
