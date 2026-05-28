@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details - LUXE</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="responsive.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .swiper-view { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; width: 100%; height: 350px; background: var(--bg-secondary); }
+        .swiper-view img { scroll-snap-align: start; width: 100%; object-fit: cover; flex-shrink: 0; }
+        .thumb-bar { display: flex; gap: 10px; padding: 10px 15px; overflow-x: auto; }
+        .thumb-bar img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; border: 2px solid transparent; cursor: pointer; }
+        .thumb-bar img.active { border-color: var(--accent-pink); }
+        .size-box { border: 1px solid var(--glass-border); padding: 10px 20px; border-radius: 8px; cursor: pointer; display: inline-block; background: var(--bg-card); }
+        .size-box.selected { border-color: var(--accent-pink); color: var(--accent-pink); }
+        .sticky-actions { position: fixed; bottom: 0; left: 0; right: 0; display: flex; background: var(--bg-secondary); padding: 10px; border-top: 1px solid var(--glass-border); z-index: 1001; }
+        .sticky-actions button { flex: 1; margin: 0 5px; }
+    </style>
+</head>
+<body>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <div id="productDetailView" style="padding-bottom: 80px;">
+        </div>
+
+    <div class="sticky-actions">
+        <button class="btn-secondary" onclick="handleAddToCartFromPage()"><i class="fa fa-shopping-cart"></i> Add To Cart</button>
+        <button class="btn-primary" onclick="handleBuyNowFromPage()">Buy Now</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js"></script>
+    <script src="app.js"></script>
+    <script src="cart.js"></script>
+    <script>
+        let currentLoadedProduct = null;
+        let selectedSize = '';
+
+        async function initProductPage() {
+            const params = new URLSearchParams(window.location.search);
+            const productId = params.get('id');
+            if(!productId) { window.location.href = 'index.html'; return; }
+
+            const { data: product, error } = await _supabase.from('products').select('*').eq('id', productId).single();
+            if(error || !product) { showToast('Product not found'); return; }
+            currentLoadedProduct = product;
+
+            let imagesHtml = product.images.map(img => `<img src="${img}" alt="img">`).join('');
+            let thumbsHtml = product.images.map((img, idx) => `<img src="${img}" class="${idx===0?'active':''}" onclick="setSliderImage(${idx})" alt="thumb">`).join('');
+            let sizesHtml = product.sizes.map(size => `<div class="size-box" onclick="selectProductSize(this, '${size}')">${size}</div>`).join('');
+
+            document.getElementById('productDetailView').innerHTML = `
+                <div class="swiper-view" id="productSlider">${imagesHtml}</div>
+                <div class="thumb-bar" id="thumbBar">${thumbsHtml}</div>
+                <div style="padding:20px;" class="glass-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h2>${product.name}</h2>
+                        <button class="btn-secondary" style="border:none;" onclick="toggleWishlist('${product.id}')"><i class="fa-heart far"></i></button>
+                    </div>
+                    <p style="color:var(--text-muted); margin:10px 0;">${product.category}</p>
+                    <div style="display:flex; align-items:center; gap:15px; margin:15px 0;">
+                        <span style="font-size:24px; font-weight:700; color:var(--accent-pink);">₹${product.discounted_price}</span>
+                        <span style="text-decoration:line-through; color:var(--text-muted);">₹${product.original_price}</span>
+                        <span style="background:var(--primary-pink); padding:3px 8px; border-radius:5px; font-size:12px;">${product.discount_percentage}% OFF</span>
+                    </div>
+                    <p style="margin-bottom:20px; line-height:1.6;">${product.description}</p>
+                    <h3 style="margin-bottom:10px;">Select Size</h3>
+                    <div style="display:flex; gap:10px; margin-bottom:20px;">${sizesHtml}</div>
+                    <hr style="border-color:var(--glass-border); margin:20px 0;">
+                    <p><i class="fa fa-truck" style="color:var(--accent-pink);"></i> Delivery: <strong>Estimated 3-5 Working Days</strong></p>
+                    <p style="margin-top:10px;"><i class="fa fa-undo" style="color:var(--accent-pink);"></i> Return Policy: <strong>7-Day Free Replacement Policy</strong></p>
+                    <button class="btn-secondary" style="margin-top:20px; width:100%;" onclick="shareProduct('${product.name}')"><i class="fa fa-share-alt"></i> Share this Product</button>
+                </div>
+            `;
+        }
+
+        function setSliderImage(index) {
+            const slider = document.getElementById('productSlider');
+            const imgWidth = slider.clientWidth;
+            slider.scrollTo({ left: imgWidth * index, behavior: 'smooth' });
+            let thumbs = document.querySelectorAll('#thumbBar img');
+            thumbs.forEach((t, idx) => idx === index ? t.classList.add('active') : t.classList.remove('active'));
+        }
+
+        function selectProductSize(el, size) {
+            document.querySelectorAll('.size-box').forEach(b => b.classList.remove('selected'));
+            el.classList.add('selected');
+            selectedSize = size;
+        }
+
+        function handleAddToCartFromPage() {
+            if(!selectedSize) { showToast('Please select a size first'); return; }
+            addToCart(currentLoadedProduct, selectedSize);
+        }
+
+        async function handleBuyNowFromPage() {
+            if(!selectedSize) { showToast('Please select a size first'); return; }
+            addToCart(currentLoadedProduct, selectedSize);
+            const user = _supabase.auth.user();
+            if(!user) { window.location.href = 'login.html'; } else { window.location.href = 'checkout.html'; }
+        }
+
+        function shareProduct(name) {
+            const url = window.location.href;
+            if(navigator.share) {
+                navigator.share({ title: name, url: url });
+            } else {
+                navigator.clipboard.writeText(url);
+                showToast('Product URL copied to clipboard');
+            }
+        }
+
+        window.onload = initProductPage;
+    </script>
+</body>
+</html>
