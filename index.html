@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LUXE - Premium Fashion Store</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="responsive.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <header>
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <h1 style="color: var(--accent-pink); font-weight: 800; font-size: 24px;">LUXE</h1>
+            <div style="display: flex; gap: 15px;">
+                <button id="headerWishlistBtn" class="btn-secondary" onclick="location.href='profile.html?tab=wishlist'"><i class="fa-heart far"></i></button>
+                <button id="headerProfileBtn" class="btn-secondary" onclick="location.href='profile.html'"><i class="fa-user far"></i></button>
+            </div>
+        </div>
+        <div class="search-bar-container">
+            <i class="fa fa-search" style="color: var(--text-muted);"></i>
+            <input type="text" id="globalSearchInput" placeholder="Search trending collections, sarees, kurti...">
+        </div>
+    </header>
+
+    <section class="filters-segment" style="padding: 10px 15px; display: flex; gap: 10px; overflow-x: auto;">
+        <select id="filterCategory" class="glass-card" style="color:white; padding: 8px; background: var(--bg-card); border-radius:8px;"><option value="">All Categories</option></select>
+        <select id="filterPrice" class="glass-card" style="color:white; padding: 8px; background: var(--bg-card); border-radius:8px;">
+            <option value="">Price Range</option>
+            <option value="0-500">Under ₹500</option>
+            <option value="500-1500">₹500 - ₹1500</option>
+            <option value="1500+">Above ₹1500</option>
+        </select>
+    </section>
+
+    <section class="banner-slider" id="bannerContainer" style="padding: 15px; height: 180px; overflow: hidden; position: relative; border-radius: 20px;"></section>
+
+    <main>
+        <h2 style="padding: 15px 15px 0 15px; font-size: 18px; text-transform: uppercase; letter-spacing: 1px;">Trending Products</h2>
+        <div class="grid-container" id="productsDisplayGrid"></div>
+    </main>
+
+    <nav class="bottom-nav">
+        <a href="index.html" class="active"><i class="fa fa-home"></i><span>Home</span></a>
+        <a href="profile.html?tab=wishlist"><i class="fa fa-heart"></i><span>Wishlist</span></a>
+        <a href="checkout.html" style="position: relative;"><i class="fa fa-shopping-bag"></i><span>Cart</span><span id="cartCountBadge" style="position:absolute; top:-5px; right:-5px; background:var(--accent-pink); border-radius:50%; width:16px; height:16px; font-size:10px; display:flex; align-items:center; justify-content:center; color:white;">0</span></a>
+        <a href="profile.html"><i class="fa fa-user"></i><span>Profile</span></a>
+    </nav>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js"></script>
+    <script src="app.js"></script>
+    <script src="referral.js"></script>
+    <script src="products.js"></script>
+    <script src="cart.js"></script>
+</body>
+</html>
