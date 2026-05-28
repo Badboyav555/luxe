@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Ecosystem Hub - LUXE</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="responsive.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="toast-container" id="toastContainer"></div>
+    
+    <main style="padding:20px; max-width:900px; margin:0 auto;">
+        <div class="glass-card" style="padding:20px; display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <div>
+                <h2 id="profUserPhone">Loading Mobile...</h2>
+                <p id="profRefCodeDisplay" style="color:var(--accent-pink); font-size:14px; font-weight:600; margin-top:5px;"></p>
+            </div>
+            <button class="btn-secondary" onclick="_supabase.auth.signOut().then(()=>window.location.href='index.html')">Logout</button>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-bottom:20px; overflow-x:auto;">
+            <button class="btn-primary" onclick="switchProfileTab('orders')">Orders Tracking</button>
+            <button class="btn-primary" onclick="switchProfileTab('referral')">Refer & Earn</button>
+            <button class="btn-primary" onclick="switchProfileTab('wishlist')">My Wishlist</button>
+        </div>
+
+        <div id="tabModuleContainer"></div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js"></script>
+    <script src="app.js"></script>
+    <script src="referral.js"></script>
+    <script>
+        async function runProfileEngine() {
+            const user = _supabase.auth.user();
+            if(!user) { window.location.href='login.html'; return; }
+            
+            // Get user phone from profile metadata tracking table
+            const { data: profile } = await _supabase.from('profiles').select('*').eq('id', user.id).single();
+            if(profile) {
+                document.getElementById('profUserPhone').innerText = `+91 ${profile.phone_number}`;
+                document.getElementById('profRefCodeDisplay').innerText = `Referral ID: ${profile.referral_code}`;
+                window.currentUserProfile = profile;
+            }
+
+            const urlTab = new URLSearchParams(window.location.search).get('tab') || 'orders';
+            switchProfileTab(urlTab);
+        }
+
+        async function switchProfileTab(tabName) {
+            const container = document.getElementById('tabModuleContainer');
+            container.innerHTML = `<p>Loading structural dataset...</p>`;
+            const user = _supabase.auth.user();
+
+            if(tabName === 'orders') {
+                const { data: orders } = await _supabase.from('orders').select('*').eq('user_id', user.id).order('created_at', {ascending:false});
+                if(!orders || orders.length===0) { container.innerHTML='<div class="glass-card" style="padding:20px;">No transaction records verified.</div>'; return; }
+                
+                let html = '<h3>Order Line Records & Status Tracking</h3>';
+                orders.forEach(order => {
+                    html += `
+                        <div class="glass-card" style="padding:15px; margin-top:15px;">
+                            <div style="display:flex; justify-content:space-between; font-weight:600;">
+                                <span>ID: ${order.id.substring(0,8)}</span>
+                                <span style="color:var(--accent-pink);">${order.order_status}</span>
+                            </div>
+                            <p style="font-size:12px; color:var(--text-muted); margin:5px 0;">Placed: ${new Date(order.created_at).toLocaleString()}</p>
+                            <p style="font-weight:700; margin:10px 0;">Total Value: ₹${order.total_amount}</p>
+                            <div style="display:flex; justify-content:space-between; font-size:10px; background:var(--bg-main); padding:8px; border-radius:6px; margin-top:10px;">
+                                <span style="${order.order_status==='Pending'?'color:var(--accent-pink); font-weight:700;':''}">Pending</span>
+                                <span style="${order.order_status==='Confirmed'?'color:var(--accent-pink); font-weight:700;':''}">Confirmed</span>
+                                <span style="${order.order_status==='Shipped'?'color:var(--accent-pink); font-weight:700;':''}">Shipped</span>
+                                <span style="${order.order_status==='Delivered'?'color:var(--accent-pink); font-weight:700;':''}">Delivered</span>
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            } 
+            
+            else if(tabName === 'referral') {
+                const refLink = `${window.location.origin}/index.html?ref=${window.currentUserProfile.referral_code}`;
+                
+                // Get referral counts and statistics dynamically
+                const { data: refOrders } = await _supabase.from('orders').select('total_amount, order_status').eq('referrer_id', user.id);
+                let totalEarnings = 0;
+                let referredOrdersCount = refOrders ? refOrders.length : 0;
+                
+                if(refOrders) {
+                    refOrders.forEach(o => {
+                        if(o.order_status === 'Delivered') {
+                            totalEarnings += (o.total_amount * 0.10); // 10% attribution standard
+                        }
+                    });
+                }
+
+                container.innerHTML = `
+                    <div class="glass-card" style="padding:20px;">
+                        <h3>Refer & Earn Architecture Cockpit</h3>
+                        <p style="margin:10px 0; color:var(--text-muted);">Share premium style and unlock a 10% recurring reward share pipeline payout on complete fulfillment tracking delivery loops.</p>
+                        
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin:20px 0;">
+                            <div style="background:var(--bg-main); padding:15px; border-radius:8px; text-align:center;">
+                                <h4>₹${totalEarnings.toFixed(2)}</h4><p style="font-size:12px; color:var(--text-muted);">Total Earnings</p>
+                            </div>
+                            <div style="background:var(--bg-main); padding:15px; border-radius:8px; text-align:center;">
+                                <h4>${referredOrdersCount}</h4><p style="font-size:12px; color:var(--text-muted);">Referred Orders</p>
+                            </div>
+                        </div>
+
+                        <input type="text" value="${refLink}" readonly style="width:100%; padding:12px; background:var(--bg-main); border:1px solid var(--glass-border); border-radius:8px; color:white; margin-bottom:15px;">
+                        <div style="display:flex; gap:10px;">
+                            <button class="btn-primary" style="flex:1;" onclick="navigator.clipboard.writeText('${refLink}'); showToast('Referral link copied!');">Copy Link</button>
+                            <button class="btn-secondary" style="flex:1; border-color:#25d366; color:#25d366;" onclick="window.open('https://api.whatsapp.com/send?text=Shop%20premium%20fashion%20at%20LUXE%20using%20my%20link:%20${encodeURIComponent(refLink)}')"><i class="fab fa-whatsapp"></i> WhatsApp Share</button>
+                        </div>
+                    </div>
+                `;
+            } 
+            
+            else if(tabName === 'wishlist') {
+                const { data: wishlists } = await _supabase.from('wishlists').select('product_id, products(*)').eq('user_id', user.id);
+                if(!wishlists || wishlists.length === 0) { container.innerHTML = '<div class="glass-card" style="padding:20px;">Wishlist clear. No bookmarks saved.</div>'; return; }
+                
+                let html = '<div class="grid-container" style="padding:0; margin-top:15px;">';
+                wishlists.forEach(item => {
+                    const p = item.products;
+                    if(!p) return;
+                    html += `
+                        <div class="glass-card" style="padding:10px; position:relative;">
+                            <img src="${p.images[0]}" style="width:100%; height:150px; object-fit:cover; border-radius:8px;">
+                            <h4 style="margin:8px 0; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.name}</h4>
+                            <p style="color:var(--accent-pink); font-weight:700;">₹${p.discounted_price}</p>
+                            <button class="btn-primary" style="width:100%; font-size:12px; padding:6px; margin-top:8px;" onclick="moveWishlistToCart('${item.id}', '${p.id}')">Move To Cart</button>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                container.innerHTML = html;
+            }
+        }
+
+        async function moveWishlistToCart(wishlistId, productId) {
+            const { data: product } = await _supabase.from('products').select('*').eq('id', productId).single();
+            if(product) {
+                // Defaulting sizes index reference selection matrix choice execution tracking trace
+                addToCart(product, product.sizes[0] || 'FS');
+                await _supabase.from('wishlists').delete().eq('id', wishlistId);
+                switchProfileTab('wishlist');
+                showToast('Item transferred into cart pipeline.');
+            }
+        }
+
+        window.onload = runProfileEngine;
+    </script>
+</body>
+</html>
