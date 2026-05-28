@@ -1,0 +1,42 @@
+/* Responsive Structural Systems */
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 15px;
+}
+
+@media (min-width: 768px) {
+    .grid-container {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 24px;
+        padding: 30px;
+    }
+    .bottom-nav {
+        top: 0;
+        bottom: auto;
+        left: auto;
+        right: 20px;
+        width: auto;
+        background: transparent;
+        border: none;
+        height: auto;
+        gap: 20px;
+    }
+    header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 5%;
+    }
+    .search-bar-container {
+        width: 400px;
+        margin-top: 0;
+    }
+}
+
+@media (min-width: 1200px) {
+    .grid-container {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
