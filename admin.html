@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master Analytics Cockpit - Admin LUXE</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body class="admin-body">
+    <div class="toast-container" id="toastContainer"></div>
+
+    <aside class="admin-sidebar">
+        <h2>LUXE Ops</h2>
+        <nav>
+            <a href="#" class="active" onclick="toggleAdminPanel('analytics', this)">Analytics Grid</a>
+            <a href="#" onclick="toggleAdminPanel('products', this)">Product Systems</a>
+            <a href="#" onclick="toggleAdminPanel('orders', this)">Fulfillment Matrix</a>
+            <a href="#" onclick="toggleAdminPanel('banners', this)">Hero Creative Ops</a>
+        </nav>
+    </aside>
+
+    <main class="admin-content" id="adminMainWorkspace">
+        </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js"></script>
+    <script src="app.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>
