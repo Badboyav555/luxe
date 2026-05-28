@@ -1,0 +1,149 @@
+:root {
+    --bg-main: #0f0f12;
+    --bg-secondary: #17171c;
+    --bg-card: #1f1f26;
+    --primary-pink: #d81b60;
+    --accent-pink: #ff4d8d;
+    --text-main: #ffffff;
+    --text-muted: #aaaaaa;
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-shadow: rgba(0, 0, 0, 0.5);
+    --font-stack: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: var(--font-stack);
+}
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    padding-bottom: 70px; /* Spacer for fixed mobile bottom nav */
+    overflow-x: hidden;
+}
+
+/* Glassmorphism Generic Utility */
+.glass-card {
+    background: var(--bg-card);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px var(--glass-shadow);
+    backdrop-filter: blur(8px);
+}
+
+/* Premium Buttons */
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-pink), var(--accent-pink));
+    color: var(--text-main);
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(216, 27, 96, 0.4);
+}
+
+.btn-secondary {
+    background: transparent;
+    border: 1px solid var(--primary-pink);
+    color: var(--accent-pink);
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* Headers */
+header {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--glass-border);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    padding: 15px;
+}
+
+.search-bar-container {
+    display: flex;
+    background: var(--bg-main);
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    padding: 8px 12px;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.search-bar-container input {
+    background: transparent;
+    border: none;
+    color: var(--text-main);
+    width: 100%;
+    margin-left: 8px;
+    outline: none;
+}
+
+/* Global Sticky Bottom Nav for Mobile UX Layout */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 65px;
+    background: rgba(23, 23, 28, 0.95);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid var(--glass-border);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 2000;
+}
+
+.bottom-nav a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 11px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.bottom-nav a.active, .bottom-nav a:hover {
+    color: var(--accent-pink);
+}
+
+.bottom-nav i {
+    font-size: 20px;
+}
+
+/* Toast System styling */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+}
+.toast {
+    background: var(--bg-card);
+    border-left: 4px solid var(--accent-pink);
+    padding: 15px 25px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    animation: slideIn 0.3s ease forwards;
+}
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
